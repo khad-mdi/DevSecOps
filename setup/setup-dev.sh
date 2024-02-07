@@ -1,5 +1,5 @@
 #!/bin/bash
-infisical export --token=st.65a699a9d3fe7eb4f26007b7.0231bbb5ba19d15fe610df8e8de00505.056b30590fcefe4cfcbe8ced1327639a -e=dev --format=dotenv-export > .env
+infisical export --token=st.9b120bd4-6fbf-4ba4-904b-05c5c520751f.1922e1e46dac22d4c52764be17cc11f4.1eca91bc8b3576caa5a41b8ada2851bf -e=dev --format=dotenv-export > .env
 source .env
 echo "$DEV_PRIVATE_KEY" > private_key.pem
 chmod 600 private_key.pem
@@ -16,7 +16,6 @@ sudo yum install -y httpd;
 # Install Composer
 php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\"
 php composer-setup.php --install-dir=/usr/local/bin --filename=composer;
-rm composer-setup.php
 git clone https://$GIT_CLONE_TOKEN@github.com/$GIT_USERNAME/$GIT_REPOSITORY.git
 
 # Install Infisical
@@ -28,7 +27,7 @@ sudo sed -i 's!/var/www/html!/var/www/html/public!g' /etc/httpd/conf/httpd.conf
 sudo systemctl start httpd
 
 # Init setup
-cd devsecops
+cd DevSecOps
 composer install
 sudo cp -R . /var/www/html/
 "
