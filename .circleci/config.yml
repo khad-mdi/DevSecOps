@@ -170,7 +170,7 @@ jobs:
           command: |
             echo 'source .env' >> "$BASH_ENV"
       - run:
-          name: Build and Push Docker Image to GHCR (GitHub Container Registry)
+          name: Build Docker Image
           command: |
             if [ ! -z "$SKIP_BUILD" ]; then
               echo "Skipping build"
@@ -197,7 +197,16 @@ jobs:
             --build-arg SQLITE_YEAR=2023 \
             --build-arg PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME \
             .
-
+      - run:
+          name: Scan Docker Image with Trivy
+          command: |
+            # Installer Trivy
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh
+            # Scanner l'image
+            trivy image --exit-code 1 --no-progress my-image-to-scan:latest
+      - run:
+          name: Push Doker Image to GHCR (GitHub Container Registry)
+          command : |
             # Push the Docker image
             docker push $REPOSITORY:$TAG
 
@@ -296,11 +305,27 @@ jobs:
             (flock -w 10 9 || exit 1; sudo -S service php${PHP_FPM_VERSION}-fpm restart ) 9>/tmp/fpm.lock
             EOF
 
-
-
-#  deploy-ssh-production:
-# It's up to you :)
-
+  deploy-ssh-prod:
+    executor: simple-executor
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "${PROD_SSH_FINGERPRINT}"
+      - deploy:
+          name: Deploy to AWS
+          command: |
+            set -x
+            ssh -v -o StrictHostKeyChecking=no $PROD_SSH_USER@$PROD_SSH_HOST \<< EOF
+            PHP_FPM_VERSION=$(php -v | head -n 1 | cut -d ' ' -f 2 | cut -d '.' -f 1-2)
+            cd $PROD_DEPLOY_DIRECTORY
+            git pull origin $CIRCLE_BRANCH
+            composer update
+            composer install --optimize-autoloader --no-interaction --prefer-dist
+            echo "APP_SECRET=\"\$(infisical export --token=$INFISICAL_TOKEN -e=dev --format=json | jq -r '.[] | select(.key == "APP_SECRET") | .value')\"" > .env
+            sudo rm -rf /var/www/html/*
+            sudo cp -R . /var/www/html/
+            (flock -w 10 9 || exit 1; sudo -S service php${PHP_FPM_VERSION}-fpm restart ) 9>/tmp/fpm.lock
+            EOF
 
   ###############################################
   # WORKFLOWS
@@ -340,14 +365,14 @@ workflows:
       - check-php-doc:
           requires:
             - build-setup
-      #      - deploy-ssh-production:
-      #          requires:
-      #              - hold
-      #          filters:
-      #            branches:
-      #              only:
-      #                - main
-      #                - master
+      - deploy-ssh-prod:
+           #requires:
+           #  - hold
+           filters:
+             branches:
+               only:
+                 - main
+                 - master
       - deploy-ssh-dev:
           #requires:
           #  - hold
