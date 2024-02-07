@@ -16,7 +16,6 @@ sudo yum install -y httpd;
 # Install Composer
 php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\"
 php composer-setup.php --install-dir=/usr/local/bin --filename=composer;
-rm composer-setup.php
 git clone https://$GIT_CLONE_TOKEN@github.com/$GIT_USERNAME/$GIT_REPOSITORY.git
 
 # Install Infisical
@@ -28,7 +27,7 @@ sudo sed -i 's!/var/www/html!/var/www/html/public!g' /etc/httpd/conf/httpd.conf
 sudo systemctl start httpd
 
 # Init setup
-cd devsecops
+cd DevSecOps
 composer install
 sudo cp -R . /var/www/html/
 "
