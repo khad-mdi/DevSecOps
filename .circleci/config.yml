@@ -316,7 +316,7 @@ jobs:
             git pull origin $CIRCLE_BRANCH
             composer update
             composer install --optimize-autoloader --no-interaction --prefer-dist
-            echo "APP_SECRET=\"\$(infisical export --token=$INFISICAL_TOKEN -e=dev --format=json | jq -r '.[] | select(.key == "APP_SECRET") | .value')\"" > .env
+            echo "APP_SECRET=\"\$(infisical export --token=$INFISICAL_TOKEN -e=prod --format=json | jq -r '.[] | select(.key == "APP_SECRET") | .value')\"" > .env
             sudo rm -rf /var/www/html/*
             sudo cp -R . /var/www/html/
             (flock -w 10 9 || exit 1; sudo -S service php${PHP_FPM_VERSION}-fpm restart ) 9>/tmp/fpm.lock
