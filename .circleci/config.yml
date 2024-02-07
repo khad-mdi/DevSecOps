@@ -197,16 +197,11 @@ jobs:
             --build-arg SQLITE_YEAR=2023 \
             --build-arg PROJECT_USERNAME=$CIRCLE_PROJECT_USERNAME \
             .
-      - run:
-          name: Scan Docker Image with Trivy
-          command: |
-            # Installer Trivy
+            # Install Trivy
             curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh
-            # Scanner l'image
+            # Scan Docker image
             ./bin/trivy image --exit-code 1 --no-progress $REPOSITORY:$TAG
-      - run:
-          name: Push Doker Image to GHCR (GitHub Container Registry)
-          command : |
+
             # Push the Docker image
             docker push $REPOSITORY:$TAG
 
