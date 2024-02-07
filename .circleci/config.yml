@@ -203,7 +203,7 @@ jobs:
             # Installer Trivy
             curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh
             # Scanner l'image
-            ./bin/trivy image --exit-code 1 --no-progress my-image-to-scan:latest
+            ./bin/trivy image --exit-code 1 --no-progress $REPOSITORY:$TAG
       - run:
           name: Push Doker Image to GHCR (GitHub Container Registry)
           command : |
