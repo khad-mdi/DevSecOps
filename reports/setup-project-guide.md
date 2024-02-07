@@ -69,6 +69,46 @@ Pour l'utiliser, il faut suivre les étapes suivantes :
 
 ## Partie 2 : Configuration du pipeline
 
+### Workflow
+
+#### container_workflow
+Ce workflow s'occupe de la gestion des images Docker. 
+Il construit l'image de l'application, effectue un scan de sécurité, et pousse ensuite l'image sur une registry GitHub. 
+
+#### main_workflow
+Le second workflow gère le déploiement direct de l'application sur une instance EC2 sans passer par la conteneurisation. Nous avons opté pour cette méthode car le déploiement d'un conteneur sur AWS pourrait nécessiter l'ajout d'une gestion via Kubernetes.
+Ce processus avec des étapes supplémentaires prendrait trop de temps.
+
+### Jobs
+
+Dans le cadre de ces workflows, plusieurs jobs sont définis pour automatiser le processus de développement :
+
+- **debug-info** : Affiche des informations de débogage sur l'environnement d'exécution.
+- **build-setup** : Installe les dépendances nécessaires à partir de Composer.
+- **lint-phpcs** : Analyse le code pour vérifier la conformité aux normes de codage.
+- **security-check-dependencies** : Vérifie les vulnérabilités de sécurité dans les dépendances.
+- **test-phpunit** : Exécute les tests unitaires de l'application.
+- **build-docker-image** : Construit l'image Docker de l'application.
+- **evaluate-phpmetrics et evaluate-phpsta**n : Évaluent la qualité et la robustesse du code.
+- **check-phpmd et check-php-doc** : Vérifient la qualité du code et la documentation.
+- **deploy-ssh-dev** et **deploy-ssh-prod** : Déploient l'application sur les environnements de développement et de production respectivement.
+
+### Pipeline
+
+Ce schéma de pipeline illustre le workflow de la pipeline sur les branches de développement (develop) et principale (main). 
+Chaque workflow exécute ses jobs de manière séquentielle, mais les deux workflows peuvent fonctionner en parallèle. 
+Cela signifie que tandis que l'un gère la conteneurisation et la préparation de l'image Docker, l'autre peut simultanément déployer les modifications directement sur les instances EC2.
+Les deux workflows sont identiques sur les deux branches, à l'exception du job de déploiement.
+Le job de déploiement en production est configuré pour être une étape manuelle sur la branche `main`. Il dépend d'un job spécial nommé `hold`, qui nécessite une approbation explicite par l'un des développeurs avant de procéder.
+Il dépend également du job `deploy-ssh-dev` pour s'assurer que le code a été testé et validé sur l'environnement de développement avant d'être déployé en production.
+
+#### Develop
+![Develop](main-develop.png)
+![Develop](container.png)
+
+#### Main
+![Main](main-main.png)
+
 ## Partie 3 : Extension du pipeline
 
 ### Déploiement sur EC2
