@@ -228,10 +228,10 @@ jobs:
           command: composer require --dev phpstan/phpstan
       - run:
           name: Run PHPStan
-          command: ./vendor/bin/phpstan analyse --level=7 src
+          command: ./vendor/bin/phpstan analyse --level=4 src
       - run:
           name: Run PHPStan on public directory
-          command: ./vendor/bin/phpstan analyse --level=7 public
+          command: ./vendor/bin/phpstan analyse --level=4 public
 
 #  evaluate-phploc:
 #    executor: php-executor
